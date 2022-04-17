@@ -11,6 +11,9 @@
     POST_REQUEST,
   } = require("./globals.js");
 
+  const dotenv = require("dotenv");
+  dotenv.config();
+
   const getAvailableDays = async () => {
     const availableDays = await page.$$(
       `.${AVAILABLE_CLASS}:not(.${BOUNDARY_MONTH})`
@@ -82,7 +85,10 @@
   const hasAvailableDays = availableDays.length > 0;
 
   if (hasAvailableDays) {
-    console.log(availableDays);
+    console.log(availableDays, process.env.MAILS);
+
+    // Send mail
+    const mails = process.env.MAILS.split(",");
   }
 
   //Take screenshot and save it
