@@ -32,7 +32,7 @@
 
     const getAvailableDays = async () => {
       const availableDays = await page.$$(
-        `.${CALENDAR.AVAILABLE_CLASS}:not(.${CALENDAR.BOUNDARY_MONTH})`
+        `.${env.AVAILABLE_CLASS}:not(.${CALENDAR.BOUNDARY_MONTH})`
       );
       return Promise.all(availableDays.map(async (day) => day.innerText()));
     };
