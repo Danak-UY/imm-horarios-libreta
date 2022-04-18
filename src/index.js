@@ -1,39 +1,102 @@
 (async () => {
   const { chromium } = require("playwright");
-  const {
-    URL,
-    EXCLUDED_RESOURCES,
-    AVAILABLE_CLASS,
-    BOUNDARY_MONTH,
-    CURRENT_MONTH,
-    CALENDAR_TOOL,
-    CALENDAR_BUTTON,
-    POST_REQUEST,
-  } = require("./globals.js");
+  const { BROWSER, CALENDAR, MAIL } = require("./globals.js");
 
   const dotenv = require("dotenv");
   dotenv.config();
+  const env = process.env;
+
+  const transporterOptions = {
+    service: "gmail",
+    auth: {
+      type: "OAuth2",
+      user: env.FROM_MAIL,
+      pass: env.FROM_MAIL_PASS,
+      clientId: env.CLIENT_ID,
+      clientSecret: env.CLIENT_SECRET,
+      refreshToken: env.REFRESH_TOKEN,
+    },
+  };
+
+  const mailer = require("nodemailer");
+  const transporter = mailer.createTransport(transporterOptions);
+
+  const sendEmail = (config) =>
+    new Promise((resolve, reject) => {
+      transporter.sendMail(config, function (error, info) {
+        if (error) reject(error);
+        resolve(info);
+      });
+    });
 
   const getAvailableDays = async () => {
     const availableDays = await page.$$(
-      `.${AVAILABLE_CLASS}:not(.${BOUNDARY_MONTH})`
+      `.${CALENDAR.AVAILABLE_CLASS}:not(.${CALENDAR.BOUNDARY_MONTH})`
     );
     return Promise.all(availableDays.map(async (day) => day.innerText()));
   };
 
   const getCurrentMonth = async () => {
-    const $currentMonth = await page.$(`.${CURRENT_MONTH}`);
-    const $currentMonthText = await $currentMonth.innerText();
-    const [currentMonth] = $currentMonthText.split(",");
-    return currentMonth;
+    const $currentMonth = await page.$(`.${CALENDAR.CURRENT_MONTH}`);
+    const currentMonthText = await $currentMonth.innerText();
+    return currentMonthText;
   };
 
   const getMonthData = async () => {
-    const currentMonth = await getCurrentMonth();
+    const month = await getCurrentMonth();
     const availableDays = await getAvailableDays();
     return {
-      [currentMonth]: availableDays,
+      month,
+      availableDays,
     };
+  };
+
+  const getOnlyMonth = ({ month }) => month.split(",")[0];
+
+  const retrieveNextMonth = async () => {
+    // Get next month button
+    const [, , $nextMonthBtn] = await page.$$(
+      `.${CALENDAR.CALENDAR_TOOL} > .${CALENDAR.CALENDAR_BUTTON}`
+    );
+
+    // Wait for next month response
+    return Promise.all([
+      // Waits for the next response matching some conditions
+      page.waitForResponse(
+        (response) =>
+          response.url().startsWith(BROWSER.POST_REQUEST) &&
+          response.status() === 200
+      ),
+      // Triggers the response
+      $nextMonthBtn.click(),
+    ]);
+  };
+
+  const getNextYearAvailableDays = async () => {
+    const months = [];
+    let currentMonth = await getMonthData();
+    months.push(currentMonth);
+
+    const firstMonthText = getOnlyMonth(currentMonth);
+
+    do {
+      await retrieveNextMonth();
+      currentMonth = await getMonthData();
+      months.push(currentMonth);
+    } while (firstMonthText !== getOnlyMonth(currentMonth));
+
+    return months.filter((month) => month.availableDays.length > 0);
+  };
+
+  const generateAvailableDaysHtml = (months) => {
+    let html = "";
+    for (let month of months) {
+      for (let day of month.availableDays) {
+        html += `<li>${day} ${month.month}</li>`;
+      }
+    }
+
+    return html;
   };
 
   // Create new chromium browser
@@ -47,53 +110,34 @@
 
   // Block not needed resources
   await page.route("**/*", (route) => {
-    return EXCLUDED_RESOURCES.includes(route.request().resourceType())
+    return BROWSER.EXCLUDED_RESOURCES.includes(route.request().resourceType())
       ? route.abort()
       : route.continue();
   });
 
   // Open the url
-  await page.goto(URL);
+  await page.goto(BROWSER.URL);
 
-  // Get all available days
-  const currentMonthData = await getMonthData();
-  console.log(currentMonthData);
-
-  // Get next month button
-  const [, , $nextMonthBtn] = await page.$$(
-    `.${CALENDAR_TOOL} > .${CALENDAR_BUTTON}`
-  );
-
-  // Wait for next month response
-  const [response] = await Promise.all([
-    // Waits for the next response matching some conditions
-    page.waitForResponse(
-      (response) =>
-        response.url().startsWith(POST_REQUEST) && response.status() === 200
-    ),
-    // Triggers the response
-    $nextMonthBtn.click(),
-  ]);
-
-  const nextMonthData = await getMonthData();
-  console.log(nextMonthData);
-
-  const availableDays = [
-    ...Object.values(currentMonthData),
-    ...Object.values(nextMonthData),
-  ].flat();
-  const hasAvailableDays = availableDays.length > 0;
-
-  if (hasAvailableDays) {
-    console.log(availableDays, process.env.MAILS);
-
-    // Send mail
-    const mails = process.env.MAILS.split(",");
-  }
-
-  //Take screenshot and save it
-  await page.screenshot({ path: `example.png` });
+  // Get next year data
+  const availableMonths = await getNextYearAvailableDays();
+  const hasAvailableMonth = availableMonths.length > 0;
 
   // Close the browser
   await browser.close();
+
+  if (hasAvailableMonth) {
+    const mailConfiguration = {
+      from: MAIL.FROM,
+      to: MAIL.FROM,
+      bcc: env.MAIL_LIST,
+      subject: MAIL.SUBJECT,
+      html: MAIL.HTML.replace(
+        MAIL.LIST_WILDCARD,
+        generateAvailableDaysHtml(availableMonths)
+      ),
+    };
+
+    // Send mail
+    await sendEmail(mailConfiguration);
+  }
 })();
