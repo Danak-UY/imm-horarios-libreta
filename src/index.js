@@ -47,7 +47,7 @@
       const month = await getCurrentMonth();
       const availableDays = await getAvailableDays();
 
-      console.log(month, availableDays);
+      console.info(month, availableDays);
       return {
         month,
         availableDays,
@@ -128,7 +128,7 @@
     // Close the browser
     await browser.close();
 
-    console.log("Dias disponibles", availableMonths);
+    console.info("Dias disponibles", availableMonths);
 
     if (hasAvailableMonth) {
       const mailConfiguration = {
@@ -146,7 +146,7 @@
       await sendEmail(mailConfiguration);
     }
   } catch (error) {
-    console.log("Hubo un error");
+    console.info("Hubo un error");
     console.warn(error);
   }
 })();
