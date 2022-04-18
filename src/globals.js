@@ -8,7 +8,7 @@ module.exports = {
       "https://www.montevideo.gub.uy/sae/agendarReserva/Paso1.xhtml",
   },
   CALENDAR: {
-    AVAILABLE_CLASS: "diaSinCupo",
+    AVAILABLE_CLASS: "diaConCupo",
     BOUNDARY_MONTH: "rich-calendar-boundary-date",
     CURRENT_MONTH: "rich-calendar-month",
     CALENDAR_TOOL: "rich-calendar-tool",
