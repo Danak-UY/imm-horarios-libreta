@@ -1,6 +1,6 @@
 (async () => {
   try {
-    const { chromium } = require("playwright");
+    const { chromium } = require("playwright-chromium");
     const { BROWSER, CALENDAR, MAIL } = require("./globals.js");
 
     const dotenv = require("dotenv");
