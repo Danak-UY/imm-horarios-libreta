@@ -106,10 +106,10 @@
     const browser = await chromium.launch({ chromiumSandbox: false });
 
     // Incognito browser instance
-    const context = await browser.newContext();
+    // const context = await browser.newContext();
 
     // Open a new page
-    const page = await context.newPage();
+    const page = await browser.newPage();
 
     // Block not needed resources
     await page.route("**/*", (route) => {
