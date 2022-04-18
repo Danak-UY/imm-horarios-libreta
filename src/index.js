@@ -126,6 +126,8 @@
     // Close the browser
     await browser.close();
 
+    console.log("Dias disponibles", availableMonths);
+
     if (hasAvailableMonth) {
       const mailConfiguration = {
         from: MAIL.FROM,
@@ -139,7 +141,7 @@
       };
 
       // Send mail
-      //   await sendEmail(mailConfiguration);
+      await sendEmail(mailConfiguration);
     }
   } catch (error) {
     console.log("Hubo un error");
