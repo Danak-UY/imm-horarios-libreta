@@ -1,6 +1,6 @@
 (async () => {
   try {
-    const { chromium } = require("playwright");
+    const { chromium } = require("playwright-chromium");
     const { BROWSER, CALENDAR, MAIL } = require("./globals.js");
 
     const dotenv = require("dotenv");
@@ -101,7 +101,7 @@
     };
 
     // Create new chromium browser
-    const browser = await chromium.launch();
+    const browser = await chromium.launch({ chromiumSandbox: false });
 
     // Incognito browser instance
     const context = await browser.newContext();
@@ -139,7 +139,7 @@
       };
 
       // Send mail
-      await sendEmail(mailConfiguration);
+      //   await sendEmail(mailConfiguration);
     }
   } catch (error) {
     console.log("Hubo un error");
