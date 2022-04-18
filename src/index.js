@@ -117,7 +117,7 @@
     });
 
     // Open the url
-    await page.goto(BROWSER.URL);
+    await page.goto(BROWSER.URL, { waitUntil: "networkidle" });
 
     // Get next year data
     const availableMonths = await getNextYearAvailableDays();
