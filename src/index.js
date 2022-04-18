@@ -46,6 +46,8 @@
     const getMonthData = async () => {
       const month = await getCurrentMonth();
       const availableDays = await getAvailableDays();
+
+      console.log(month, availableDays);
       return {
         month,
         availableDays,
