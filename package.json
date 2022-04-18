@@ -20,6 +20,7 @@
   "dependencies": {
     "dotenv": "^16.0.0",
     "nodemailer": "^6.7.3",
+    "playwright": "^1.21.0",
     "playwright-chromium": "^1.21.0"
   },
   "engines": {

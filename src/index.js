@@ -1,6 +1,6 @@
 (async () => {
   try {
-    const { chromium } = require("playwright-chromium");
+    const { chromium } = require("playwright");
     const { BROWSER, CALENDAR, MAIL } = require("./globals.js");
 
     const dotenv = require("dotenv");
@@ -46,6 +46,8 @@
     const getMonthData = async () => {
       const month = await getCurrentMonth();
       const availableDays = await getAvailableDays();
+
+      console.log(month, availableDays);
       return {
         month,
         availableDays,
