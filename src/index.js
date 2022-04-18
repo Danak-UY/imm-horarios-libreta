@@ -32,7 +32,7 @@
 
     const getAvailableDays = async () => {
       const availableDays = await page.$$(
-        `.${CALENDAR.AVAILABLE_CLASS}:not(.${CALENDAR.BOUNDARY_MONTH})`
+        `.${env.AVAILABLE_CLASS}:not(.${CALENDAR.BOUNDARY_MONTH})`
       );
       return Promise.all(availableDays.map(async (day) => day.innerText()));
     };
@@ -47,7 +47,7 @@
       const month = await getCurrentMonth();
       const availableDays = await getAvailableDays();
 
-      console.log(month, availableDays);
+      console.info(month, availableDays);
       return {
         month,
         availableDays,
@@ -106,10 +106,10 @@
     const browser = await chromium.launch({ chromiumSandbox: false });
 
     // Incognito browser instance
-    const context = await browser.newContext();
+    // const context = await browser.newContext();
 
     // Open a new page
-    const page = await context.newPage();
+    const page = await browser.newPage();
 
     // Block not needed resources
     await page.route("**/*", (route) => {
@@ -128,7 +128,7 @@
     // Close the browser
     await browser.close();
 
-    console.log("Dias disponibles", availableMonths);
+    console.info("Dias disponibles", availableMonths);
 
     if (hasAvailableMonth) {
       const mailConfiguration = {
@@ -146,7 +146,7 @@
       await sendEmail(mailConfiguration);
     }
   } catch (error) {
-    console.log("Hubo un error");
+    console.info("Hubo un error");
     console.warn(error);
   }
 })();
