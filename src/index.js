@@ -146,7 +146,7 @@
       await sendEmail(mailConfiguration);
     }
   } catch (error) {
-    console.info("Hubo un error");
+    console.error("Hubo un error");
     console.warn(error);
   }
 })();
